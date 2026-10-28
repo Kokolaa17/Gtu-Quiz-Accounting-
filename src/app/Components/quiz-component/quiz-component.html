@@ -1,0 +1,69 @@
+<main class="sheet">
+  @if (!topic()) {
+    <header class="head">
+      <h1>ბუღალტრული აღრიცხვის საფუძვლები</h1>
+      <p>აირჩიე თემა და დაიწყე ტესტი.</p>
+    </header>
+
+    <ul class="topics">
+      @for (t of topics; track t.id) {
+        <li>
+          <div class="topic-info">
+            <strong>{{ t.title }}</strong>
+            <span>{{ t.questions.length }} კითხვა</span>
+          </div>
+          <div class="topic-actions">
+            <button type="button" class="btn" (click)="start(t)">დაწყება</button>
+            <button type="button" class="btn ghost" (click)="start(t, true)">არეული</button>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else if (finished()) {
+    <section class="result" aria-live="polite">
+      <h2>{{ topic()!.title }}</h2>
+      <p class="score">{{ score() }} / {{ questions().length }}</p>
+      <p>სწორი პასუხი: {{ (score() / questions().length * 100).toFixed(0) }}%</p>
+      <div class="actions">
+        <button type="button" class="btn" (click)="restart()">თავიდან დაწყება</button>
+        <button type="button" class="btn ghost" (click)="backToTopics()">თემების სია</button>
+      </div>
+    </section>
+  } @else {
+    <header class="bar">
+      <button type="button" class="link" (click)="backToTopics()">თემების სია</button>
+      <span>{{ index() + 1 }} / {{ questions().length }}</span>
+    </header>
+    <div class="track" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+      <div class="fill" [style.width.%]="progress()"></div>
+    </div>
+
+    <section class="question">
+      <h2>{{ current().prompt }}</h2>
+
+      <div class="options">
+        @for (opt of current().options; track $index) {
+          <button type="button" class="option" [class]="'option ' + optionState($index)"
+                  [disabled]="picked() !== null" (click)="choose($index)">
+            <span class="letter">{{ letters[$index] }}</span>
+            <span>{{ opt }}</span>
+          </button>
+        }
+      </div>
+
+      @if (picked() !== null) {
+        <div class="feedback" aria-live="polite">
+          <p class="verdict" [class.ok]="picked() === current().correct">
+            {{ picked() === current().correct ? 'სწორია.' : 'არასწორია. სწორი პასუხია ' + letters[current().correct] + ').' }}
+          </p>
+          @if (current().explanation) {
+            <p>{{ current().explanation }}</p>
+          }
+          <button type="button" class="btn" (click)="next()">
+            {{ isLast() ? 'შედეგის ნახვა' : 'შემდეგი კითხვა' }}
+          </button>
+        </div>
+      }
+    </section>
+  }
+</main>
